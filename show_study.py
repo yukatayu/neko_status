@@ -1,3 +1,17 @@
+
+####################
+
+status_list = {
+        'going_out': ['離席中', '離席しています。', 'active'],
+        'active'   : ['進捗してる', '進捗してます。 ふふん♪', 'working'],
+        'thinking' : ['集中してる', '集中しています。 むふー。', 'working'],
+        'space_out': ['ぼんやり', 'ぼんやりしてます。 ぺしょ。', 'thinking'],
+        'meeting'  : ['会議', '会議に呼ばれてます。', 'thinking'],
+        'sleeping' : ['寝てる', '寝ています💕 もふ。', 'sleeping']
+    }
+
+####################
+
 import datetime
 import time
 import PySimpleGUI as sg
@@ -12,9 +26,7 @@ RPC.connect()
 text_widget = sg.Text('前回の更新日時：')
 layout = [
     [text_widget],
-    [sg.Radio('進捗してる', 'status', enable_events=True, key='active'),
-     sg.Radio('ぼんやり', 'status', enable_events=True, key='space_out'),
-     sg.Radio('寝てる', 'status', enable_events=True, key='sleeping')]
+    list(map(lambda key: sg.Radio(status_list[key][0], 'status', enable_events=True, key=key), status_list.keys()))
 ]
 window = sg.Window("ねこのすてーたす", layout)
 status = ''
@@ -27,15 +39,10 @@ while True:
         # sg.popup('同じ個所を押しました')
         continue
 
-    if event in ['active', 'space_out', 'sleeping']:
+    if event in status_list.keys():
         status = event
         text_widget.update(value='前回の更新日時：' + datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
-
-    if event == 'active':
-        RPC.update(start=time.time(),state="進捗してる♪",large_image="active")
-    elif event == 'space_out':
-        RPC.update(start=time.time(),state="ぼんやりしてます。",large_image="yukatayu")
-    elif event == 'sleeping':
-        RPC.update(start=time.time(),state="寝ています💕",large_image="sleeping")
+        current_status = status_list[event]
+        RPC.update(start=time.time(), state=current_status[1], large_image=current_status[2])
 
 window.close()
